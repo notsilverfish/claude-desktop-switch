@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # Claude Desktop support is Windows-only, and so is the code under test.
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        node: [20, 24]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      # pretest builds the bundle; the tests run against a simulated Claude Desktop.
+      - run: npm test
+      - name: Package contents
+        run: npm pack --dry-run

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.log
+# Never commit real Claude data, captures or backups
+captures/
+backups/
+*.jsonl

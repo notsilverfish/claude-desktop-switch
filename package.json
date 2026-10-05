@@ -1,0 +1,45 @@
+{
+  "name": "claude-desktop-switch",
+  "version": "0.1.0",
+  "description": "The claude-switch CLI: save Claude Desktop logins as profiles and switch accounts without signing in again (Windows).",
+  "type": "module",
+  "bin": {
+    "claude-switch": "dist/claude-switch.mjs",
+    "csw": "dist/claude-switch.mjs"
+  },
+  "files": [
+    "dist/claude-switch.mjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "os": [
+    "win32"
+  ],
+  "scripts": {
+    "build": "node build.mjs",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "prepublishOnly": "npm run typecheck && npm test",
+    "pretest": "node build.mjs"
+  },
+  "keywords": [
+    "claude",
+    "claude-desktop",
+    "account",
+    "profile",
+    "switch",
+    "cli",
+    "windows"
+  ],
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^20.19.43",
+    "commander": "^12.1.0",
+    "esbuild": "^0.21.5",
+    "typescript": "^5.9.3",
+    "vitest": "^2.1.9"
+  }
+}
