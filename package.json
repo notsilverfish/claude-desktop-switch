@@ -2,6 +2,14 @@
   "name": "claude-desktop-switch",
   "version": "0.1.0",
   "description": "The claude-switch CLI: save Claude Desktop logins as profiles and switch accounts without signing in again (Windows).",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/notsilverfish/claude-desktop-switch.git"
+  },
+  "homepage": "https://github.com/notsilverfish/claude-desktop-switch#readme",
+  "bugs": {
+    "url": "https://github.com/notsilverfish/claude-desktop-switch/issues"
+  },
   "type": "module",
   "bin": {
     "claude-switch": "dist/claude-switch.mjs",

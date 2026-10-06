@@ -1,13 +1,19 @@
 name: Release
 
-# Push a tag like v0.1.0 (matching package.json) to publish to npm.
+# Push a tag like v0.2.0 (matching package.json) to publish to npm.
+#
+# Uses npm trusted publishing: npm checks that the package comes from this
+# workflow in this repository, so no npm token is stored in GitHub. Set it up
+# once at npmjs.com → claude-desktop-switch → Settings → Trusted publishing
+# (GitHub Actions, repository notsilverfish/claude-desktop-switch,
+# workflow release.yml). Provenance is attached automatically.
 on:
   push:
     tags: ['v*']
 
 permissions:
   contents: read
-  id-token: write # npm provenance: links the published package to this build
+  id-token: write
 
 jobs:
   publish:
@@ -19,6 +25,8 @@ jobs:
           node-version: 24
           registry-url: https://registry.npmjs.org
           cache: npm
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - run: npm install -g npm@latest
       - run: npm ci
       - name: Tag matches package.json
         shell: bash
@@ -27,6 +35,4 @@ jobs:
           [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "Tag $GITHUB_REF_NAME does not match package.json $version"; exit 1; }
       - run: npm run typecheck
       - run: npm test
-      - run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - run: npm publish --access public
