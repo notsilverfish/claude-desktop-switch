@@ -147,6 +147,10 @@ export interface MergeOptions {
   /** Extra vault roots to recover chats from (e.g. the old merger's Vault folder). */
   extraVaults?: string[];
   vaultDir: string;
+  /** Take chats only from `extraVaults` (a restore), not from other accounts or the vault. */
+  vaultsOnly?: boolean;
+  /** Create a missing project folder instead of skipping its chats (restoring onto a new PC). */
+  createProjects?: boolean;
 }
 
 function newest(records: SessionRecord[]): SessionRecord[] {
@@ -164,13 +168,13 @@ export function planMerge(dataDir: string, activeAccountId: string, opts: MergeO
   const activeDir = path.join(root, activeAccountId);
   const sources: SessionRecord[] = [];
   let invalid = 0;
-  const accounts = dirs(root).filter(isGuid).filter((a) => a !== activeAccountId && (!opts.from || opts.from.includes(a)));
+  const accounts = opts.vaultsOnly ? [] : dirs(root).filter(isGuid).filter((a) => a !== activeAccountId && (!opts.from || opts.from.includes(a)));
   for (const a of accounts) {
     const r = readRecords(path.join(root, a), a);
     sources.push(...r.records);
     invalid += r.invalid;
   }
-  const vaults = [opts.vaultDir, ...(opts.extraVaults ?? [])];
+  const vaults = opts.vaultsOnly ? (opts.extraVaults ?? []) : [opts.vaultDir, ...(opts.extraVaults ?? [])];
   if (!opts.from) {
     for (const v of vaults) {
       const indexes = path.join(v, 'session-indexes');
@@ -184,7 +188,7 @@ export function planMerge(dataDir: string, activeAccountId: string, opts: MergeO
   const plan: MergePlan = { activeAccountId, items: [], alreadyPresent: 0, deletedHere: 0, missingProject: new Map(), invalid };
 
   for (const record of newest(sources)) {
-    if (!activeProjects.has(record.projectId)) {
+    if (!activeProjects.has(record.projectId) && !opts.createProjects) {
       if (!plan.missingProject.has(record.projectId)) plan.missingProject.set(record.projectId, record.cwd);
       continue;
     }

@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0
+
+- `claude-switch backup`: back up your accounts list, Code chats (sidebar records and transcripts) and Claude config to amber, encrypted on this PC. Logins are never included. Only changed files are uploaded again.
+- `claude-switch backup --pick`: choose accounts, folders and chats (with their sizes), and optionally remember the choice. `--all`, `--accounts`, `--folders` and `--since` choose without questions; `--name` picks the amber project; `--dry-run` shows what would go in.
+- `claude-switch restore` on a new PC: brings back accounts (as profiles waiting for a sign-in), transcripts, and config. `--map OLD=NEW` moves chats to a different folder.
+- `claude-switch setup`: signs in to each restored account, one after another.
+- Restored chats go into their own account's sidebar the moment you sign in to it (or switch to it). Chats deleted on the new PC stay deleted.
+
 ## 0.1.1
 
 - Works with Claude Desktop 3.x, which moved its data to `%LOCALAPPDATA%\Claude-Data`. 0.1.0 could not find it and stopped with "data folder not found". Saved profiles keep working; nothing needs to be re-saved.

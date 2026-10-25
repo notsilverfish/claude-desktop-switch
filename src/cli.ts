@@ -6,6 +6,7 @@
 
 import fs from 'node:fs';
 import { Command, Option } from 'commander';
+import { backupCommand, restoreCommand, setupCommand, type BackupFlags, type RestoreFlags } from './commands/backup.js';
 import { doctorCommand } from './commands/doctor.js';
 import {
   addCommand, currentCommand, listCommand, removeCommand, renameCommand, saveCommand, useCommand,
@@ -35,6 +36,12 @@ Profiles
 Code-tab chats
   claude-switch sessions [name]         chats per account (each account has its own sidebar)
   claude-switch sessions merge          copy other accounts' chats into this sidebar (--dry-run first)
+
+Moving to another PC (uses amber: npm install -g amber-backup)
+  claude-switch backup                  back up your accounts list, chats and config to amber
+  claude-switch backup --pick           choose which accounts, folders and chats to include
+  claude-switch restore                 on the new PC: bring it all back (after amber login)
+  claude-switch setup                   then sign in to each account, once
 
 Tools
   claude-switch export                  a redacted copy of your Claude config (never logins)
@@ -139,6 +146,29 @@ sessions.command('merge')
   .option('--dry-run', 'show what would be copied, change nothing')
   .addOption(noLaunch())
   .action((o: MergeFlags) => sessionsMergeCommand(ctx(), o));
+
+program.command('backup').description('back up accounts, chats and config to amber (never logins)')
+  .option('--pick', 'choose accounts, folders and chats (and optionally remember the choice)')
+  .option('--all', 'back up every chat (and forget a saved choice)')
+  .option('--accounts <profiles...>', 'only these accounts, this time')
+  .option('--folders <folders...>', 'only chats from these folders, this time')
+  .option('--since <when>', 'only chats active recently, e.g. 30d')
+  .option('--name <project>', 'the amber project to back up to (remembered)')
+  .option('--no-config', 'leave out the Claude config (settings, memory, skills)')
+  .option('--dry-run', 'show what would be backed up, upload nothing')
+  .option('--list', 'list the backups stored in amber')
+  .action((o: BackupFlags) => backupCommand(ctx(), o));
+
+program.command('restore').description('restore a claude-switch backup from amber (on a new PC)')
+  .option('--name <project>', 'the amber project to restore (asks if there are several)')
+  .option('--snapshot <id>', 'a specific snapshot instead of the latest')
+  .option('--map <OLD=NEW...>', 'move chats to another folder, e.g. C:\\Users\\old=C:\\Users\\new')
+  .option('--no-chats', 'only restore the accounts list and config')
+  .addOption(noLaunch())
+  .action((o: RestoreFlags) => restoreCommand(ctx(), o));
+
+program.command('setup').description('sign in to each account that has no login on this PC yet')
+  .action(() => setupCommand(ctx()));
 
 program.command('export').description('save a redacted copy of your Claude configuration (never includes logins)')
   .option('-o, --out <dir>', 'output folder (default: a new folder in the tool folder)')

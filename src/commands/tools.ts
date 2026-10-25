@@ -4,8 +4,8 @@ import type { Context } from '../context.js';
 import { exportConfig } from '../core/export.js';
 import { findByAccount } from '../core/profiles.js';
 import { computeUsage, csvReport, markdownReport, MODEL_RATES, noCacheCost, PRICING_CHECKED } from '../core/usage.js';
-import { CdsError } from '../errors.js';
 import { ensureDir, timestamp, writeFileAtomic } from '../util/fs.js';
+import { parseSince } from '../util/time.js';
 import { done, out, printJson, say, table, warn, withTask } from '../util/output.js';
 
 function dataDirOrNull(ctx: Context): string | null {
@@ -40,17 +40,7 @@ export async function exportCommand(ctx: Context, opts: { out?: string; includeT
   done('Export complete', t0);
 }
 
-// "7d", "12h", "30d" or a date.
-export function parseSince(value: string): Date {
-  const m = /^(\d+)\s*([hdw])$/i.exec(value.trim());
-  if (m) {
-    const hours = Number(m[1]) * { h: 1, d: 24, w: 168 }[m[2]!.toLowerCase() as 'h' | 'd' | 'w'];
-    return new Date(Date.now() - hours * 3600_000);
-  }
-  const d = new Date(value);
-  if (Number.isNaN(d.getTime())) throw new CdsError(`Invalid --since value "${value}".`, 'Use e.g. 7d, 24h, 2w or 2026-09-01.');
-  return d;
-}
+export { parseSince } from '../util/time.js';
 
 const money = (n: number) => `$${n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const compact = (n: number) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)}B` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M` : n >= 1e3 ? `${(n / 1e3).toFixed(1)}K` : String(n));

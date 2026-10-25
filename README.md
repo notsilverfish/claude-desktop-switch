@@ -70,6 +70,37 @@ Or run `claude-switch use` with no name and pick from a list.
 
 `csw` is a short name for `claude-switch`. For example, `csw use work`.
 
+## Moving to another PC
+
+Your saved logins only work on the PC that saved them (that's what keeps them safe). Everything else can come with you: your list of accounts, your Code chats, and your Claude settings, memory and skills. It's stored with [amber](https://www.npmjs.com/package/amber-backup), encrypted on your PC before it's uploaded.
+
+**On your old PC:**
+
+```
+npm install -g amber-backup
+amber login
+claude-switch backup
+```
+
+Want to choose what goes in? Run `claude-switch backup --pick`. It asks which accounts, which folders, and which chats to leave out (each chat shows its size), then offers to remember your choice for next time. `claude-switch backup --all` goes back to everything.
+
+Run `claude-switch backup` again whenever you like. Only what changed gets uploaded.
+
+**On your new PC:**
+
+```
+npm install -g amber-backup claude-desktop-switch
+amber login
+claude-switch restore
+claude-switch setup
+```
+
+`amber login` asks you to approve the new PC with your passkey. `restore` brings back your accounts, chats and config. `setup` then signs you in to each account, one after another. That's the only time you sign in.
+
+Each account's chats go back into that account's sidebar as soon as you sign in to it. Chats you already deleted on the new PC stay deleted.
+
+Different username or drive on the new PC? Tell restore where things moved: `claude-switch restore --map C:\Users\old=C:\Users\new`.
+
 ## Good to know
 
 **Will I lose my chats or settings?** No. Only the login changes. Your settings, connectors and chats stay put.

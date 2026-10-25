@@ -46,6 +46,10 @@ export interface ExportOptions {
   outDir: string;
   dataDir: string | null;
   includeTranscripts: boolean;
+  /** Code sidebar records of every account (off when a backup chooses its own chats). */
+  sidebars?: boolean;
+  /** The list of every local transcript file (off for the same reason). */
+  inventory?: boolean;
   profileName: (accountId: string) => string | null;
   onProgress?: (message: string) => void;
 }
@@ -140,7 +144,7 @@ export function exportConfig(opts: ExportOptions): ExportResult {
         if (opts.includeTranscripts) copyFile(f, path.join(out, 'transcripts', rel));
       }
     }
-    writeJson('transcript-inventory.json', inventory);
+    if (opts.inventory !== false) writeJson('transcript-inventory.json', inventory);
     note(`${inventory.length} transcripts ${opts.includeTranscripts ? 'copied (redacted)' : 'listed (use --include-transcripts to copy them)'}`);
   } else {
     note('~/.claude not found');
@@ -185,7 +189,7 @@ export function exportConfig(opts: ExportOptions): ExportResult {
     if (cowork) note(`Cowork sessions: ${cowork} files (redacted)`);
     copyTree(path.join(opts.dataDir, 'Claude Extensions Settings'), path.join(dk, 'Claude Extensions Settings'));
 
-    const sessions = copyTree(sessionRoot(opts.dataDir), path.join(dk, 'claude-code-sessions'));
+    const sessions = opts.sidebars === false ? 0 : copyTree(sessionRoot(opts.dataDir), path.join(dk, 'claude-code-sessions'));
     const accounts = listAccounts(opts.dataDir);
     for (const a of accounts) {
       for (const r of readRecords(path.join(sessionRoot(opts.dataDir), a.accountId), a.accountId).records) if (r.cwd) cwds.add(r.cwd);
@@ -197,7 +201,7 @@ export function exportConfig(opts: ExportOptions): ExportResult {
       dir: e.isDirectory(),
       bytes: pathSize(path.join(opts.dataDir!, e.name)),
     }));
-    writeJson(path.join('claude-desktop', 'accounts-and-inventory.json'), {
+    if (opts.inventory !== false) writeJson(path.join('claude-desktop', 'accounts-and-inventory.json'), {
       accounts: accounts.map((a) => ({ ...a, profile: opts.profileName(a.accountId) })),
       dataFolderInventory: inventory,
     });

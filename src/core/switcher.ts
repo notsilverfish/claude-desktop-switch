@@ -9,6 +9,8 @@ import {
   writeProfile, type Profile,
 } from './profiles.js';
 import { acquireLock, backupLiveAuth, clearJournal, readJournal, readLock, writeJournal } from './safety.js';
+import { applyPending, pendingDir } from './backup.js';
+import { exists } from '../util/fs.js';
 
 // Timings (overridable for tests).
 const envMs = (name: string, fallback: number) => Number(process.env[name] ?? fallback);
@@ -144,6 +146,14 @@ async function launchAndVerify(ctx: Context, profile: Profile): Promise<LoginChe
   return login;
 }
 
+// Chats restored from a backup wait until their account is signed in here (see backup.ts).
+// Both callers have Claude Desktop closed at this point.
+async function addRestoredChats(ctx: Context, profile: Profile): Promise<void> {
+  if (!profile.accountUuid || !exists(pendingDir(ctx, profile.accountUuid))) return;
+  await withTask('Adding restored chats to the sidebar…', () => applyPending(ctx, profile.accountUuid!),
+    (r) => `Added ${r.added} restored chat${r.added === 1 ? '' : 's'} to the sidebar${r.updated ? ` (${r.updated} updated)` : ''}`);
+}
+
 // ------------------------------------------------------------------ switch
 
 export async function switchTo(ctx: Context, query: string, opts: LaunchOptions): Promise<SwitchResult> {
@@ -175,6 +185,7 @@ export async function switchTo(ctx: Context, query: string, opts: LaunchOptions)
       clearJournal(ctx.home);
       return dir;
     }, () => `Switched the login to "${target.name}"`);
+    await addRestoredChats(ctx, target);
 
     let login: LoginCheck = 'not-checked';
     if (opts.launch) login = await launchAndVerify(ctx, target);
@@ -271,6 +282,7 @@ export async function addAccount(ctx: Context, name: string, opts: LaunchOptions
       await quitApp(ctx.install);
       saveLiveInto(ctx.home, ctx.dataDir, profile, ctx.install.version);
     }, () => `Saved profile "${profile.name}"`);
+    await addRestoredChats(ctx, profile);
     if (opts.launch) await startApp(ctx);
     done(`${created ? 'Added' : 'Refreshed'} "${profile.name}"`, t0);
     return { profile, created, savedOutgoing };
