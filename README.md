@@ -109,7 +109,7 @@ Claude Desktop keeps its login in its data folder: two encrypted token entries a
 
 Token values are never decrypted, printed or sent anywhere, and the tool makes no network requests. Saved logins live in `%LOCALAPPDATA%\claude-desktop-switch`, which is locked to your Windows user; Windows encrypts the tokens for your user on this PC. If Claude Desktop is reinstalled, its encryption key changes and saved logins stop working; the tool detects this and asks you to sign in again rather than breaking the app.
 
-Microsoft Store installs keep their data in `%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming\Claude`. `%APPDATA%\Claude` only mirrors that folder while the app runs, so the tool always uses the package folder.
+Claude Desktop 3.x keeps its data in `%LOCALAPPDATA%\Claude-Data\claude_…`. Microsoft Store installs of 2.x used `%LOCALAPPDATA%\Packages\Claude_…\LocalCache\Roaming\Claude`, which `%APPDATA%\Claude` only mirrors while the app runs. The tool checks all of these and uses the one Claude wrote to most recently; `claude-switch doctor` shows which.
 
 Run from a terminal inside Claude Desktop, a switch would kill its own terminal. The tool detects that, asks, and continues in a background process outside Desktop; the log goes to `%LOCALAPPDATA%\claude-desktop-switch\logs`.
 

@@ -12,7 +12,7 @@ import { out, printJson, say } from '../util/output.js';
 import { shortId } from './common.js';
 
 // Desktop versions the file layout has been verified against.
-export const TESTED_VERSIONS = ['2.19675'];
+export const TESTED_VERSIONS = ['2.19675', '3.6556'];
 
 type Level = 'ok' | 'warn' | 'error' | 'info';
 interface Check {

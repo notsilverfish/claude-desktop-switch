@@ -15,7 +15,7 @@ export interface Install {
 
 export interface DataDir {
   dir: string;
-  source: 'override' | 'store' | 'appdata';
+  source: 'override' | 'claude-data' | 'store' | 'appdata';
 }
 
 export const fakeMode = () => process.env.CDS_FAKE_PROCESSES === '1';
@@ -80,6 +80,15 @@ export function dataDirCandidates(override?: string): DataDir[] {
   const list: DataDir[] = [];
   const forced = override ?? process.env.CDS_DATA;
   if (forced) return [{ dir: path.resolve(forced), source: 'override' }];
+  // Claude Desktop 3.x keeps its data in %LOCALAPPDATA%\Claude-Data\claude_<package id>.
+  const claudeData = path.join(process.env.LOCALAPPDATA ?? '', 'Claude-Data');
+  try {
+    for (const name of fs.readdirSync(claudeData)) {
+      if (name.toLowerCase().startsWith('claude')) list.push({ dir: path.join(claudeData, name), source: 'claude-data' });
+    }
+  } catch {
+    // older version: no Claude-Data folder
+  }
   const packages = path.join(process.env.LOCALAPPDATA ?? '', 'Packages');
   try {
     for (const name of fs.readdirSync(packages)) {
@@ -94,9 +103,22 @@ export function dataDirCandidates(override?: string): DataDir[] {
   return list;
 }
 
+// Claude has moved its data folder between versions (2.x: the Store package's
+// LocalCache; 3.x: %LOCALAPPDATA%\Claude-Data). An update can leave the old folder
+// behind, so when several exist, use the one Claude wrote to most recently.
 export function resolveDataDir(override?: string): DataDir {
   const candidates = dataDirCandidates(override);
-  const found = candidates.find((c) => fs.existsSync(path.join(c.dir, 'config.json')));
+  const lastWrite = (c: DataDir) => {
+    try {
+      return fs.statSync(path.join(c.dir, 'config.json')).mtimeMs;
+    } catch {
+      return -1;
+    }
+  };
+  const found = candidates
+    .map((c) => ({ c, t: lastWrite(c) }))
+    .filter((x) => x.t >= 0)
+    .sort((a, b) => b.t - a.t)[0]?.c;
   if (!found) {
     throw new CdsError(
       `Claude Desktop data folder not found (looked in ${candidates.map((c) => c.dir).join(', ')}).`,

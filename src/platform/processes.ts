@@ -71,7 +71,8 @@ export function isDesktopProcess(exe: string, install: Install): boolean {
   if (!e) return false;
   if (install.installDir && e.startsWith(install.installDir.toLowerCase() + path.sep)) return true;
   if (install.exe && e === install.exe.toLowerCase()) return true;
-  if (/\\claude\\claude-code\\[^\\]+\\/.test(e)) return true;
+  // 2.x: ...\Claude\claude-code\<ver>\...  3.x: ...\Claude-Data\claude_<id>\claude-code\<ver>\...
+  if (/\\claude[^\\]*\\claude-code\\[^\\]+\\/.test(e)) return true;
   return install.kind === 'installer' && /\\anthropicclaude\\app-[^\\]+\\claude\.exe$/.test(e);
 }
 

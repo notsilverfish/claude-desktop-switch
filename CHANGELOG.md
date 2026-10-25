@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+- Works with Claude Desktop 3.x, which moved its data to `%LOCALAPPDATA%\Claude-Data`. 0.1.0 could not find it and stopped with "data folder not found". Saved profiles keep working; nothing needs to be re-saved.
+- When an update leaves an old data folder behind, the one Claude wrote to most recently is used.
+- Claude Code sessions running in Claude Desktop 3.x are recognised again, so you are warned before a switch stops them.
+
 ## 0.1.0
 
 First release. Windows, Claude Desktop (Microsoft Store and classic installer).
